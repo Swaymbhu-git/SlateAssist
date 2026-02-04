@@ -111,18 +111,44 @@ export const runCode = async (req, res) => {
     }
 };
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
 export const askAi = async (req, res) => {
     const { prompt } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    // Validate request
+    if (!prompt) {
+        return res.status(400).json({ message: 'Prompt is required' });
+    }
 
     try {
-        const response = await axios.post(apiUrl, {
-            contents: [{ parts: [{ text: prompt }] }],
+        // Use the new SDK method
+        const response = await ai.models.generateContent({
+            // 'gemini-2.0-flash' is the recommended fast model for late 2025
+            // If you specifically want the preview, use: 'gemini-3-pro-preview'
+            model: "gemini-2.5-flash-lite", 
+            contents: prompt, 
         });
-        res.json(response.data);
+
+        // The new SDK simplifies the response parsing (response.text)
+        console.log("response is: ")
+        // console.log('Gemini SDK Response:', response.candidates[0].content.parts[0].text);
+        const text = response?.candidates?.[0]?.content?.parts?.map(p => p.text ?? "").join("") || "";
+
+        res.json({
+        text,                            
+        finishReason: response?.candidates?.[0]?.finishReason,
+        modelVersion: response?.modelVersion,
+        usage: response?.usageMetadata
+        });
+
     } catch (error) {
-        console.error('Gemini API Error:', error.response?.data || error.message);
-        res.status(500).json({ message: 'Error communicating with AI assistant.' });
+        console.error('Gemini SDK Error:', error);
+        
+        // Handle specific API errors
+        res.status(500).json({ 
+            message: 'Error communicating with AI assistant.',
+            details: error.message 
+        });
     }
 };

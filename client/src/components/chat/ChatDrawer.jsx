@@ -34,8 +34,8 @@ const ChatDrawer = ({ isOpen, onClose, editorCode, executionInput, executionOutp
         `;
 
         try {
-            const { data: result } = await fetchAiResponse(prompt);
-            const botResponse = result.candidates[0].content.parts[0].text;
+            const { data } = await fetchAiResponse(prompt);
+            const botResponse = data.text || "No response from AI";
             const newBotMessage = { sender: 'bot', text: botResponse };
             setMessages((prev) => [...prev, newBotMessage]);
         } catch (error) {
