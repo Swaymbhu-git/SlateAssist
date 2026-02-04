@@ -1,6 +1,10 @@
 import Room from '../models/Room.js';
 import User from '../models/User.js';
 import axios from 'axios';
+import { GoogleGenAI } from "@google/genai";
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 // --- Room Management ---
 
@@ -131,7 +135,7 @@ export const askAi = async (req, res) => {
         });
 
         // The new SDK simplifies the response parsing (response.text)
-        console.log("response is: ")
+        // console.log("response is: ")
         // console.log('Gemini SDK Response:', response.candidates[0].content.parts[0].text);
         const text = response?.candidates?.[0]?.content?.parts?.map(p => p.text ?? "").join("") || "";
 
